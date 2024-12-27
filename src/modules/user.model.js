@@ -4,7 +4,6 @@ const userSchema = new mongoose.Schema(
   {
     fullName: {
       type: String,
-      required: true,
     },
     email: {
       type: String,
@@ -18,6 +17,11 @@ const userSchema = new mongoose.Schema(
     },
     profileImage: {
       type: String,
+    },
+    status: {
+      type: String,
+      enum: ["active", "offline"],
+      default: "active",
     },
   },
   {

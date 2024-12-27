@@ -51,9 +51,7 @@ const signup = async (req, res) => {
         profileImage: result.profileImage,
       });
     } else {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: "User not created." });
+      return res.status(400).json({ message: "User not created." });
     }
   } catch (error) {
     console.error(error);
@@ -92,6 +90,8 @@ const login = async (req, res) => {
       fullName: user.fullName,
       email: user.email,
       profileImage: user.profileImage,
+      status: user.status,
+      createdAt: user.createdAt,
     });
   } catch (error) {
     res
@@ -125,7 +125,7 @@ const updateProfile = async (req, res) => {
     const uploadImage = await cloudinary.uploader.upload(profileImage);
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { fullName, profileImage: uploadImage.secure_url },
+      { fullName: fullName, profileImage: uploadImage.secure_url },
       { new: true }
     );
 
@@ -134,6 +134,8 @@ const updateProfile = async (req, res) => {
         .status(StatusCodes.BAD_REQUEST)
         .json({ message: "User not found." });
     }
+
+    console.log(updatedUser, "sdasds");
 
     return res.status(StatusCodes.OK).json({
       message: "Profile updated successfully.",

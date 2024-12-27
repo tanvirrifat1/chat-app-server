@@ -4,6 +4,7 @@ import authRoutes from "./routes/auth.route.js";
 import ConnectionDB from "./lib/db.js";
 import cookieParser from "cookie-parser";
 import messageRoutes from "./routes/message.route.js";
+import cors from "cors";
 
 dotenv.config();
 const app = express();
@@ -11,6 +12,12 @@ const app = express();
 app.use(express.json());
 // app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
 
 const PORT = process.env.PORT || 5000;
 
