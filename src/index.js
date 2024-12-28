@@ -38,3 +38,15 @@ try {
 } catch (error) {
   console.error("Error starting the server:", error);
 }
+
+// MONGO_URL=mongodb+srv://chat-app:lNoKRjX1JNQBYwxl@cluster0.afkplob.mongodb.net/chat-app?retryWrites=true&w=majority&appName=Cluster0
+
+// PORT=5000
+// IP_ADDRESS=192.168.12.206
+// JWT_SECRET=secreart1524
+
+// NODE_ENV=development
+
+// CLOUDINARY_CLOUD_NAME=dvi9q02vy
+// CLOUDINARY_API_KEY=655866963586852
+// CLOUDINARY_API_SECRET=fcdXMYoLeoTudqthm8ZUbCZcxc0
