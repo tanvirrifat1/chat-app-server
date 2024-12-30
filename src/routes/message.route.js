@@ -4,7 +4,7 @@ import { messageController } from "../controller/message.controller.js";
 
 const router = express.Router();
 
-router.get("/user", protectRoute, messageController.getUserForSidebar);
+router.get("/users", protectRoute, messageController.getUserForSidebar);
 
 router.get("/:id", protectRoute, messageController.getMessages);
 
