@@ -87,7 +87,7 @@ const getAllUsers = async (query: Record<string, unknown>) => {
     );
     conditions.push({ $and: filterConditions });
   }
-  conditions.push({ role: USER_ROLES.USER });
+  conditions.push({ role: { $not: { $eq: USER_ROLES.ADMIN } } });
 
   const whereConditions = conditions.length ? { $and: conditions } : {};
 
