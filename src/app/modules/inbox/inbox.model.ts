@@ -21,4 +21,4 @@ const inboxSchema = new Schema<IInbox>(
   },
 );
 
-export const inbox = model<IInbox>('Inbox', inboxSchema);
+export const Inbox = model<IInbox>('Inbox', inboxSchema);
