@@ -9,6 +9,7 @@ import { IUser } from './user.interface';
 import { User } from './user.model';
 import { sendNotifications } from '../../../helpers/notificationHelper';
 import unlinkFile from '../../../shared/unlinkFile';
+import { any } from 'zod';
 
 const createUser = async (payload: IUser) => {
   if (payload.role && payload.role === USER_ROLES.ADMIN) {
@@ -69,10 +70,25 @@ const createUser = async (payload: IUser) => {
   return result;
 };
 
-const getAllUsers = async (query: Record<string, unknown>) => {
+const getAllUsers = async (query: Record<string, unknown>, user: string) => {
   const { page, limit, searchTerm, ...filterData } = query;
   const conditions: any[] = [];
 
+  const isUser = await User.isExistUserById(user);
+
+  if (!isUser) {
+    throw new Error('User not found.');
+  }
+
+  // If role is USER, limit to only their own data
+  if (isUser.role === USER_ROLES.USER) {
+    conditions.push({
+      $and: [
+        { _id: { $ne: user } }, // Exclude current user
+        { role: { $ne: USER_ROLES.ADMIN } }, // Exclude admins
+      ],
+    });
+  }
   if (searchTerm) {
     conditions.push({
       $or: [{ name: { $regex: searchTerm, $options: 'i' } }],
@@ -87,7 +103,6 @@ const getAllUsers = async (query: Record<string, unknown>) => {
     );
     conditions.push({ $and: filterConditions });
   }
-  conditions.push({ role: { $not: { $eq: USER_ROLES.ADMIN } } });
 
   const whereConditions = conditions.length ? { $and: conditions } : {};
 

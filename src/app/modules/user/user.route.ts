@@ -28,7 +28,11 @@ router.get(
   UserController.getUserProfile,
 );
 
-router.get('/get-all-users', UserController.getAllUser);
+router.get(
+  '/get-all-users',
+  auth(USER_ROLES.ADMIN, USER_ROLES.USER),
+  UserController.getAllUser,
+);
 
 router.get(
   '/get-all-users/:id',
