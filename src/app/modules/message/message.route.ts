@@ -8,7 +8,7 @@ const router = express.Router();
 
 router.get(
   '/get-message/:id',
-  // auth(USER_ROLES.USER),
+  auth(USER_ROLES.USER),
   MessageController.getAllMessages,
 );
 

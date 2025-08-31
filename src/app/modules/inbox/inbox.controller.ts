@@ -28,7 +28,7 @@ const getAllInboxFromDb = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     success: true,
-    message: 'Inbox created successfully',
+    message: 'Inbox retrieved successfully',
     data: result,
   });
 });
