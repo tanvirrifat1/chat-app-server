@@ -1,6 +1,9 @@
 import { Types } from 'mongoose';
 import catchAsync from '../../../shared/catchAsync';
 import { PaymentService } from './payment.service';
+import { stripe } from '../../../shared/stripe';
+import config from '../../../config';
+import { Request, Response } from 'express';
 
 const createCheckoutSession = catchAsync(async (req, res) => {
   const user = req.user.id;
@@ -21,6 +24,25 @@ const createCheckoutSession = catchAsync(async (req, res) => {
   }
 });
 
+const handleStripeWebhookService = async (req: Request, res: Response) => {
+  const sig = req.headers['stripe-signature'];
+
+  try {
+    const event = stripe.webhooks.constructEvent(
+      req.body,
+      sig! as string,
+      process.env.STRIPE_WEBHOOK_SECRET!,
+    );
+
+    await PaymentService.handleStripeWebhookService(event);
+
+    res.status(200).send({ received: true });
+  } catch (err: any) {
+    res.status(400).send(`Webhook Error:${err.message}`);
+  }
+};
+
 export const PaymentController = {
   createCheckoutSession,
+  handleStripeWebhookService,
 };

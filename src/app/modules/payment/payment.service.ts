@@ -3,9 +3,9 @@ import ApiError from '../../../errors/ApiError';
 import { Product } from '../product/product.model';
 import { IPayment } from './payment.interface';
 import { stripe } from '../../../shared/stripe';
-import { Payment } from './payment.model';
 import Stripe from 'stripe';
 import { Types } from 'mongoose';
+import { Payment } from './payment.model';
 
 const createCheckoutSession = async (payload: IPayment) => {
   const isExistProduct = await Product.findById(payload.product);
@@ -15,6 +15,7 @@ const createCheckoutSession = async (payload: IPayment) => {
   }
 
   const user = payload.user;
+  const product = payload.product;
 
   try {
     const session = await stripe.checkout.sessions.create({
@@ -32,11 +33,11 @@ const createCheckoutSession = async (payload: IPayment) => {
       ],
       mode: 'payment',
       customer_email: payload.email,
-      success_url: `https://holybot.ai`,
-      cancel_url: `https://holybot.ai`,
+      success_url: `https://holybot.ai/success`,
+      cancel_url: `https://holybot.ai/cancel`,
       metadata: {
         user,
-        product: isExistProduct._id,
+        product,
       } as any,
     });
 
@@ -50,44 +51,53 @@ const createCheckoutSession = async (payload: IPayment) => {
 };
 
 const handleStripeWebhookService = async (event: Stripe.Event) => {
-  switch (event.type) {
-    case 'checkout.session.completed': {
-      const session = event.data.object as Stripe.Checkout.Session;
+  try {
+    switch (event.type) {
+      case 'checkout.session.completed': {
+        const session = event.data.object as Stripe.Checkout.Session;
 
-      const { amount_total, metadata, payment_intent, status } = session;
-      const userId = metadata?.user as string;
-      const product = metadata?.product;
-      const email = session.customer_email || '';
+        const userId = session.metadata?.user;
+        const productId = session.metadata?.product;
 
-      const amountTotal = (amount_total ?? 0) / 100;
+        if (!userId || !productId) {
+          console.error('Missing metadata:', session.metadata);
+          return;
+        }
 
-      const paymentRecord = new Payment({
-        amount: amountTotal,
-        user: new Types.ObjectId(userId),
-        product: new Types.ObjectId(product),
-        email,
-        transactionId: payment_intent,
-        status,
-      });
+        const amountTotal = (session.amount_total ?? 0) / 100;
 
-      await paymentRecord.save();
-      break;
-    }
+        const paymentRecord = new Payment({
+          amount: amountTotal,
+          user: new Types.ObjectId(userId),
+          product: new Types.ObjectId(productId),
+          email: session.customer_email || '',
+          transactionId: session.payment_intent,
+          status: 'success', // explicitly set
+        });
 
-    case 'checkout.session.async_payment_failed': {
-      const session = event.data.object as Stripe.Checkout.Session;
-      const { payment_intent } = session;
-      console.log(payment_intent);
-      const payment = await Payment.findOne({ transactionId: payment_intent });
-      if (payment) {
-        payment.status = 'failed';
-        await payment.save();
+        await paymentRecord.save();
+        console.log('Payment saved successfully!');
+        break;
       }
-      break;
-    }
 
-    default:
-      console.log(`Unhandled event type: ${event.type}`);
+      case 'checkout.session.async_payment_failed': {
+        const session = event.data.object as Stripe.Checkout.Session;
+        const payment = await Payment.findOne({
+          transactionId: session.payment_intent,
+        });
+        if (payment) {
+          payment.status = 'failed';
+          await payment.save();
+          console.log('Payment status updated to failed');
+        }
+        break;
+      }
+
+      default:
+        console.log(`Unhandled event type: ${event.type}`);
+    }
+  } catch (err) {
+    console.error('Error handling Stripe webhook:', err);
   }
 };
 

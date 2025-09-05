@@ -26,4 +26,7 @@ export default {
     email: process.env.ADMIN_EMAIL,
     password: process.env.ADMIN_PASSWORD,
   },
+  payment: {
+    stripe_webhook_secret: process.env.STRIPE_WEBHOOK_SECRET,
+  },
 };
