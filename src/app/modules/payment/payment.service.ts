@@ -71,8 +71,11 @@ const handleStripeWebhookService = async (event: Stripe.Event) => {
           user: new Types.ObjectId(userId),
           product: new Types.ObjectId(productId),
           email: session.customer_email || '',
-          transactionId: session.payment_intent,
-          status: 'success', // explicitly set
+          transactionId:
+            typeof session.payment_intent === 'string'
+              ? session.payment_intent
+              : session.payment_intent?.id,
+          status: 'success',
         });
 
         await paymentRecord.save();
@@ -82,14 +85,34 @@ const handleStripeWebhookService = async (event: Stripe.Event) => {
 
       case 'checkout.session.async_payment_failed': {
         const session = event.data.object as Stripe.Checkout.Session;
-        const payment = await Payment.findOne({
-          transactionId: session.payment_intent,
-        });
-        if (payment) {
+
+        const paymentIntentId =
+          typeof session.payment_intent === 'string'
+            ? session.payment_intent
+            : session.payment_intent?.id;
+
+        let payment = await Payment.findOne({ transactionId: paymentIntentId });
+
+        // If payment record doesn't exist yet, create a placeholder
+        if (!payment) {
+          payment = new Payment({
+            transactionId: paymentIntentId,
+            status: 'failed',
+            amount: 0, // unknown
+            user: session.metadata?.user
+              ? new Types.ObjectId(session.metadata.user)
+              : undefined,
+            product: session.metadata?.product
+              ? new Types.ObjectId(session.metadata.product)
+              : undefined,
+            email: session.customer_email || '',
+          });
+        } else {
           payment.status = 'failed';
-          await payment.save();
-          console.log('Payment status updated to failed');
         }
+
+        await payment.save();
+        console.log('Payment status updated to failed');
         break;
       }
 
@@ -100,7 +123,6 @@ const handleStripeWebhookService = async (event: Stripe.Event) => {
     console.error('Error handling Stripe webhook:', err);
   }
 };
-
 export const PaymentService = {
   createCheckoutSession,
   handleStripeWebhookService,
