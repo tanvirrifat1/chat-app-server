@@ -7,4 +7,5 @@ export type IPayment = {
   transactionId: string;
   email: string;
   status: 'success' | 'failed';
+  percentage: string;
 };

@@ -12,4 +12,10 @@ router.post(
   PaymentController.createCheckoutSession,
 );
 
+router.get(
+  '/get-payment-by-user',
+  auth(USER_ROLES.USER),
+  PaymentController.getPaymentByUser,
+);
+
 export const PaymentRoutes = router;

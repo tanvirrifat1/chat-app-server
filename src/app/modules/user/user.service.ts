@@ -9,7 +9,6 @@ import { IUser } from './user.interface';
 import { User } from './user.model';
 import { sendNotifications } from '../../../helpers/notificationHelper';
 import unlinkFile from '../../../shared/unlinkFile';
-import { any } from 'zod';
 
 const createUser = async (payload: IUser) => {
   if (payload.role && payload.role === USER_ROLES.ADMIN) {

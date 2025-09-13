@@ -29,6 +29,9 @@ const paymentSchema = new Schema<IPayment>(
       type: String,
       enum: ['success', 'failed'],
     },
+    percentage: {
+      type: String,
+    },
   },
   { timestamps: true },
 );

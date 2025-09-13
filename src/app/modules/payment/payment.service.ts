@@ -65,10 +65,15 @@ const handleStripeWebhookService = async (event: Stripe.Event) => {
         }
 
         const amountTotal = (session.amount_total ?? 0) / 100;
+        const userPercentage = 0.8; // 80%
+        const userEarning = amountTotal * userPercentage;
+
+        console.log('in');
 
         const paymentRecord = new Payment({
           amount: amountTotal,
           user: new Types.ObjectId(userId),
+          percentage: userEarning.toString(),
           product: new Types.ObjectId(productId),
           email: session.customer_email || '',
           transactionId:
@@ -106,6 +111,7 @@ const handleStripeWebhookService = async (event: Stripe.Event) => {
               ? new Types.ObjectId(session.metadata.product)
               : undefined,
             email: session.customer_email || '',
+            percentage: '0',
           });
         } else {
           payment.status = 'failed';
@@ -123,7 +129,18 @@ const handleStripeWebhookService = async (event: Stripe.Event) => {
     console.error('Error handling Stripe webhook:', err);
   }
 };
+
+const getPaymentByUser = async (userId: string) => {
+  const payments = await Payment.find({ user: userId });
+  const total = payments.reduce(
+    (sum, p) => sum + parseFloat(p.percentage as string),
+    0,
+  );
+  return total;
+};
+
 export const PaymentService = {
   createCheckoutSession,
   handleStripeWebhookService,
+  getPaymentByUser,
 };
