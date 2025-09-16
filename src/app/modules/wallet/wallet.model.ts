@@ -8,6 +8,11 @@ const walletSchema = new Schema<IWallet>(
       required: true,
     },
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    status: {
+      type: String,
+      enum: ['pending', 'paid', 'refund'],
+      default: 'pending',
+    },
   },
   { timestamps: true },
 );

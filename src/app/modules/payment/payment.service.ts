@@ -6,7 +6,6 @@ import { stripe } from '../../../shared/stripe';
 import Stripe from 'stripe';
 import { Types } from 'mongoose';
 import { Payment } from './payment.model';
-import { Withdraw } from '../withdraw/withdraw.model';
 import { logger } from '../../../shared/logger';
 import { green, yellow } from 'colors';
 import { Wallet } from '../wallet/wallet.model';
