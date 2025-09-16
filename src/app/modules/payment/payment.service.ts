@@ -6,6 +6,9 @@ import { stripe } from '../../../shared/stripe';
 import Stripe from 'stripe';
 import { Types } from 'mongoose';
 import { Payment } from './payment.model';
+import { Withdraw } from '../withdraw/withdraw.model';
+import { logger } from '../../../shared/logger';
+import { green, yellow } from 'colors';
 
 const createCheckoutSession = async (payload: IPayment) => {
   const isExistProduct = await Product.findById(payload.product);
@@ -33,8 +36,8 @@ const createCheckoutSession = async (payload: IPayment) => {
       ],
       mode: 'payment',
       customer_email: payload.email,
-      success_url: `https://holybot.ai/success`,
-      cancel_url: `https://holybot.ai/cancel`,
+      success_url: `https://rifat-full-stack-portfolio.vercel.app`,
+      cancel_url: `https://rifat-full-stack-portfolio.vercel.app`,
       metadata: {
         user,
         product,
@@ -68,8 +71,6 @@ const handleStripeWebhookService = async (event: Stripe.Event) => {
         const userPercentage = 0.8; // 80%
         const userEarning = amountTotal * userPercentage;
 
-        console.log('in');
-
         const paymentRecord = new Payment({
           amount: amountTotal,
           user: new Types.ObjectId(userId),
@@ -83,8 +84,15 @@ const handleStripeWebhookService = async (event: Stripe.Event) => {
           status: 'success',
         });
 
+        if (paymentRecord.status === 'success') {
+          await Withdraw.create({
+            user: new Types.ObjectId(userId),
+            amount: userEarning,
+          });
+        }
         await paymentRecord.save();
-        console.log('Payment saved successfully!');
+        // console.log('Payment saved successfully!');
+        logger.info(green('Payment saved successfully!'));
         break;
       }
 
@@ -119,6 +127,7 @@ const handleStripeWebhookService = async (event: Stripe.Event) => {
 
         await payment.save();
         console.log('Payment status updated to failed');
+        logger.info(yellow('Payment status updated to failed'));
         break;
       }
 
