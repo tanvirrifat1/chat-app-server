@@ -9,6 +9,7 @@ import { Payment } from './payment.model';
 import { Withdraw } from '../withdraw/withdraw.model';
 import { logger } from '../../../shared/logger';
 import { green, yellow } from 'colors';
+import { Wallet } from '../wallet/wallet.model';
 
 const createCheckoutSession = async (payload: IPayment) => {
   const isExistProduct = await Product.findById(payload.product);
@@ -85,11 +86,22 @@ const handleStripeWebhookService = async (event: Stripe.Event) => {
         });
 
         if (paymentRecord.status === 'success') {
-          await Withdraw.create({
+          const wallet = await Wallet.findOne({
             user: new Types.ObjectId(userId),
-            amount: userEarning,
           });
+
+          if (!wallet) {
+            await Wallet.create({
+              user: new Types.ObjectId(userId),
+              balance: userEarning,
+            });
+          } else {
+            // If wallet exists, update balance
+            wallet.balance += userEarning;
+            await wallet.save();
+          }
         }
+
         await paymentRecord.save();
         // console.log('Payment saved successfully!');
         logger.info(green('Payment saved successfully!'));
