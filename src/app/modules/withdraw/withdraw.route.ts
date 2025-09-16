@@ -11,4 +11,16 @@ router.get(
   WithdrawController.getMyWallet,
 );
 
+router.get(
+  '/get-my-withdraw-paid',
+  auth(USER_ROLES.USER),
+  WithdrawController.getMyWalletPaid,
+);
+
+router.get(
+  '/get-all-withdraws',
+  auth(USER_ROLES.ADMIN),
+  WithdrawController.getAllWallet,
+);
+
 export const WithdrawRoutes = router;
