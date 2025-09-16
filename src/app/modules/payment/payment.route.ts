@@ -18,4 +18,10 @@ router.get(
   PaymentController.getPaymentByUser,
 );
 
+router.get(
+  '/get-all-payments',
+  auth(USER_ROLES.USER),
+  PaymentController.getAllPayments,
+);
+
 export const PaymentRoutes = router;

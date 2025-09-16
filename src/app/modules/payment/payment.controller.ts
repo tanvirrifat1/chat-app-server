@@ -56,8 +56,20 @@ const getPaymentByUser = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getAllPayments = catchAsync(async (req: Request, res: Response) => {
+  const payments = await PaymentService.getAllPayments(req.query);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'Payments retrieved successfully',
+    data: payments,
+  });
+});
+
 export const PaymentController = {
   createCheckoutSession,
   handleStripeWebhookService,
   getPaymentByUser,
+  getAllPayments,
 };

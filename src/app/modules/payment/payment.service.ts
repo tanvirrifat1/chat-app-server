@@ -131,7 +131,7 @@ const handleStripeWebhookService = async (event: Stripe.Event) => {
 };
 
 const getPaymentByUser = async (userId: string) => {
-  const payments = await Payment.find({ user: userId });
+  const payments = await Payment.find({ user: userId, status: 'success' });
   const total = payments.reduce(
     (sum, p) => sum + parseFloat(p.percentage as string),
     0,
@@ -139,8 +139,51 @@ const getPaymentByUser = async (userId: string) => {
   return total;
 };
 
+const getAllPayments = async (query: Record<string, unknown>) => {
+  const { page, limit, searchTerm, ...filterData } = query;
+  const conditions: any[] = [{ status: 'success' }];
+
+  // Add filter conditions
+  if (Object.keys(filterData).length > 0) {
+    const filterConditions = Object.entries(filterData).map(
+      ([field, value]) => ({
+        [field]: value,
+      }),
+    );
+    conditions.push({ $and: filterConditions });
+  }
+
+  const whereConditions = conditions.length ? { $and: conditions } : {};
+
+  // Pagination setup
+  const pages = parseInt(page as string) || 1;
+  const size = parseInt(limit as string) || 10;
+  const skip = (pages - 1) * size;
+
+  // Set default sort order to show new data first
+  const result = await Payment.find(whereConditions)
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(size)
+    .populate({
+      path: 'user',
+      select: 'name email',
+    })
+    .populate('product')
+    .lean<IPayment[]>(); // Assert type
+  const total = await Payment.countDocuments(whereConditions);
+
+  return {
+    result,
+    page: pages,
+    limit: size,
+    total,
+  };
+};
+
 export const PaymentService = {
   createCheckoutSession,
   handleStripeWebhookService,
   getPaymentByUser,
+  getAllPayments,
 };

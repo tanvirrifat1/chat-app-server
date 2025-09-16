@@ -22,7 +22,7 @@ app.use(
 
 //webhook
 app.post(
-  '/webhook',
+  '/webhooks',
   express.raw({ type: 'application/json' }),
   PaymentController.handleStripeWebhookService,
 );
