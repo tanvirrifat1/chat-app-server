@@ -54,8 +54,23 @@ const paidWithdraw = catchAsync(async (req, res) => {
   });
 });
 
+const getMyWithdrawRequests = catchAsync(async (req, res) => {
+  const result = await WithdrawService.getMyWithdrawRequests(
+    req.user.id,
+    req.query,
+  );
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: 'Withdraw requests retrieved successfully',
+    data: result,
+  });
+});
+
 export const WithdrawController = {
   requestWithdraw,
   getAllWithdrawRequests,
   paidWithdraw,
+  getMyWithdrawRequests,
 };

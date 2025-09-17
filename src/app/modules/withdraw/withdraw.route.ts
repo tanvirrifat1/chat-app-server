@@ -31,4 +31,10 @@ router.patch(
   },
 );
 
+router.get(
+  '/my-withdraw-requests',
+  auth(USER_ROLES.USER),
+  WithdrawController.getMyWithdrawRequests,
+);
+
 export const WithdrawRoutes = router;

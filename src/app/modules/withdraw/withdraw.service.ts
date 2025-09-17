@@ -113,8 +113,37 @@ const paidWithdraw = async (id: string, payload: Partial<IWithdraw>) => {
   return updatedWithdraw;
 };
 
+const getMyWithdrawRequests = async (
+  userId: string,
+  query: Record<string, unknown>,
+) => {
+  const page = Number(query.page) || 1;
+  const limit = Number(query.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  const [result, total] = await Promise.all([
+    Withdraw.find({ user: userId })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate({
+        path: 'user',
+        select: 'name email phone image',
+      }),
+    Withdraw.countDocuments({ user: userId }),
+  ]);
+
+  return {
+    result,
+    page,
+    limit,
+    total,
+  };
+};
+
 export const WithdrawService = {
   requestWithdraw,
   getAllWithdrawRequests,
   paidWithdraw,
+  getMyWithdrawRequests,
 };
