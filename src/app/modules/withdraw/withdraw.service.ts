@@ -72,7 +72,24 @@ const getAllWithdrawRequests = async (query: Record<string, unknown>) => {
   };
 };
 
+const paidWithdraw = async (id: string, payload: Partial<IWithdraw>) => {
+  const isExist = await Withdraw.findById(id);
+  if (!isExist) {
+    throw new ApiError(StatusCodes.NOT_FOUND, 'Withdraw request not found');
+  }
+  if (isExist.status === 'paid') {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      'Withdraw request already paid',
+    );
+  }
+
+  const result = await Withdraw.findByIdAndUpdate(id, payload, { new: true });
+  return result;
+};
+
 export const WithdrawService = {
   requestWithdraw,
   getAllWithdrawRequests,
+  paidWithdraw,
 };
