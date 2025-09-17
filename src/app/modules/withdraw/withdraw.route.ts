@@ -11,4 +11,10 @@ router.post(
   WithdrawController.requestWithdraw,
 );
 
+router.get(
+  '/admin-withdraw-requests',
+  auth(USER_ROLES.ADMIN),
+  WithdrawController.getAllWithdrawRequests,
+);
+
 export const WithdrawRoutes = router;

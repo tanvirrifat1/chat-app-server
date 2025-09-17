@@ -44,6 +44,35 @@ const requestWithdraw = async (data: IWithdraw) => {
   return Withdraw.create(data);
 };
 
+const getAllWithdrawRequests = async (query: Record<string, unknown>) => {
+  const page = Number(query.page) || 1;
+  const limit = Number(query.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  const filter: Record<string, unknown> = {};
+  if (query.status) filter.status = query.status;
+
+  const [result, total] = await Promise.all([
+    Withdraw.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate({
+        path: 'user',
+        select: 'name email phone image',
+      }),
+    Withdraw.countDocuments(filter),
+  ]);
+
+  return {
+    result,
+    page,
+    limit,
+    total,
+  };
+};
+
 export const WithdrawService = {
   requestWithdraw,
+  getAllWithdrawRequests,
 };
