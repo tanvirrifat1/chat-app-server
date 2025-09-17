@@ -5,4 +5,5 @@ export type IWithdraw = {
   amount: number;
   status: string;
   image: string;
+  wallet?: Types.ObjectId;
 };
