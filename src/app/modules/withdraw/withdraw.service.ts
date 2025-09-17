@@ -73,19 +73,44 @@ const getAllWithdrawRequests = async (query: Record<string, unknown>) => {
 };
 
 const paidWithdraw = async (id: string, payload: Partial<IWithdraw>) => {
-  const isExist = await Withdraw.findById(id);
-  if (!isExist) {
+  const withdraw = await Withdraw.findById(id);
+  if (!withdraw) {
     throw new ApiError(StatusCodes.NOT_FOUND, 'Withdraw request not found');
   }
-  if (isExist.status === 'paid') {
+
+  // If already paid, block
+  if (withdraw.status === 'paid') {
     throw new ApiError(
       StatusCodes.BAD_REQUEST,
       'Withdraw request already paid',
     );
   }
 
-  const result = await Withdraw.findByIdAndUpdate(id, payload, { new: true });
-  return result;
+  // If the incoming payload sets status to "paid"
+  if (payload.status === 'paid') {
+    const wallet = await Wallet.findById(withdraw.wallet);
+    if (!wallet) {
+      throw new ApiError(StatusCodes.NOT_FOUND, 'Wallet not found');
+    }
+
+    // Check if wallet has enough balance
+    if (wallet.balance < withdraw.amount) {
+      throw new ApiError(
+        StatusCodes.BAD_REQUEST,
+        'Insufficient wallet balance',
+      );
+    }
+
+    // Deduct the amount
+    wallet.balance -= withdraw.amount;
+    await wallet.save();
+  }
+
+  // Update withdraw with the new payload (status, image, etc.)
+  const updatedWithdraw = await Withdraw.findByIdAndUpdate(id, payload, {
+    new: true,
+  });
+  return updatedWithdraw;
 };
 
 export const WithdrawService = {

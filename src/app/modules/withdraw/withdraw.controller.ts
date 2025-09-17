@@ -38,8 +38,6 @@ const paidWithdraw = catchAsync(async (req, res) => {
     ...req.body,
   };
 
-  console.log(value, 'value');
-
   let image = getFilePathMultiple(req.files, 'image', 'image');
 
   if (image && image.length > 0) {
