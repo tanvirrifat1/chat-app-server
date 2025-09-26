@@ -32,6 +32,17 @@ const createItem = catchAsync(async (req, res) => {
   });
 });
 
+const getAllItems = catchAsync(async (req, res) => {
+  const result = await ItemService.getAllItems(req.query, req.user.id);
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: 'Items retrieved successfully',
+    data: result,
+  });
+});
+
 export const ItemController = {
   createItem,
+  getAllItems,
 };

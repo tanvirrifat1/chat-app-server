@@ -19,4 +19,6 @@ router.post(
   ItemController.createItem,
 );
 
+router.get('/get-all-items', auth(USER_ROLES.USER), ItemController.getAllItems);
+
 export const ItemRoutes = router;

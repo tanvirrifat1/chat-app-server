@@ -24,8 +24,8 @@ const getAllItems = async (query: Record<string, unknown>, user: string) => {
   }
 
   const [result, total] = await Promise.all([
-    Item.find({ userId: user }).sort({ createdAt: -1 }).skip(skip).limit(limit),
-    Item.countDocuments({ userId: user }),
+    Item.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
+    Item.countDocuments(filter),
   ]);
 
   return {
