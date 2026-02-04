@@ -10,6 +10,7 @@ import { WalletRoutes } from '../app/modules/wallet/wallet.route';
 import { WithdrawRoutes } from '../app/modules/withdraw/withdraw.route';
 import { ItemRoutes } from '../app/modules/item/item.route';
 import { PayRoutes } from '../app/modules/pay/pay.route';
+import { ChatRoutes } from '../app/modules/chat/chat.route';
 
 const router = express.Router();
 
@@ -25,6 +26,7 @@ const apiRoutes = [
   { path: '/withdraw', route: WithdrawRoutes },
   { path: '/item', route: ItemRoutes },
   { path: '/pay', route: PayRoutes },
+  { path: '/chat', route: ChatRoutes },
 ];
 
 apiRoutes.forEach(route => router.use(route.path, route.route));
